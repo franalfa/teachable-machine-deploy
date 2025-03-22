@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: sentiment-app
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s build
+    envVars:
+      - key: DISABLE_BUN
+        value: true
