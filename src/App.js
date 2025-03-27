@@ -3,14 +3,35 @@ import React, { useState } from 'react';
 function App() {
   const [text, setText] = useState('');
   const [sentiment, setSentiment] = useState(null);
+  const [error, setError] = useState(null);
 
   const analyzeSentiment = async () => {
-    if (text.includes('love') || text.includes('great')) {
-      setSentiment('😊 Positivo');
-    } else if (text.includes('hate') || text.includes('bad')) {
-      setSentiment('😠 Negativo');
-    } else {
-      setSentiment('😐 Neutral');
+    setSentiment(null);
+    setError(null);
+
+    try {
+      const response = await fetch('https://sentiment-backend-v2h9.onrender.com/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error del servidor');
+      }
+
+      const data = await response.json();
+
+      // Mostrar con emoji
+      let emoji = '😐';
+      if (data.sentiment === 'positive') emoji = '😊';
+      else if (data.sentiment === 'negative') emoji = '😠';
+
+      setSentiment(`${emoji} ${data.sentiment.charAt(0).toUpperCase() + data.sentiment.slice(1)}`);
+    } catch (err) {
+      setError('No se pudo conectar con el backend');
     }
   };
 
@@ -28,6 +49,11 @@ function App() {
       {sentiment && (
         <div style={{ marginTop: '1rem', fontSize: '1.5rem' }}>
           Resultado: {sentiment}
+        </div>
+      )}
+      {error && (
+        <div style={{ marginTop: '1rem', color: 'red' }}>
+          {error}
         </div>
       )}
     </div>
